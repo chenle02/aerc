@@ -295,32 +295,34 @@ func (ml *MessageList) MouseEvent(localX int, localY int, event vaxis.Event) {
 	if event, ok := event.(vaxis.Mouse); ok {
 		switch event.Button {
 		case vaxis.MouseLeftButton:
-			selectedMsg, ok := ml.Clicked(localX, localY)
-			if ok {
-				ml.Select(selectedMsg)
-				acct := SelectedAccount()
-				if acct == nil || acct.Messages().Empty() {
-					return
+			if event.EventType == vaxis.EventPress {
+				selectedMsg, ok := ml.Clicked(localX, localY)
+				if ok {
+					ml.Select(selectedMsg)
+					acct := SelectedAccount()
+					if acct == nil || acct.Messages().Empty() {
+						return
+					}
+					store := acct.Messages().Store()
+					msg := acct.Messages().Selected()
+					if msg == nil {
+						return
+					}
+					lib.NewMessageStoreView(msg, acct.UiConfig().AutoMarkRead,
+						store, CryptoProvider(), DecryptKeys,
+						func(view lib.MessageView, err error) {
+							if err != nil {
+								PushError(err.Error())
+								return
+							}
+							viewer, err := NewMessageViewer(acct, view)
+							if err != nil {
+								PushError(err.Error())
+								return
+							}
+							NewTab(viewer, msg.Envelope.Subject)
+						})
 				}
-				store := acct.Messages().Store()
-				msg := acct.Messages().Selected()
-				if msg == nil {
-					return
-				}
-				lib.NewMessageStoreView(msg, acct.UiConfig().AutoMarkRead,
-					store, CryptoProvider(), DecryptKeys,
-					func(view lib.MessageView, err error) {
-						if err != nil {
-							PushError(err.Error())
-							return
-						}
-						viewer, err := NewMessageViewer(acct, view)
-						if err != nil {
-							PushError(err.Error())
-							return
-						}
-						NewTab(viewer, msg.Envelope.Subject)
-					})
 			}
 		case vaxis.MouseWheelDown:
 			if ml.store != nil {

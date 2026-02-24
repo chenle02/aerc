@@ -390,9 +390,11 @@ func (dirlist *DirectoryList) MouseEvent(localX int, localY int, event vaxis.Eve
 	if event, ok := event.(vaxis.Mouse); ok {
 		switch event.Button {
 		case vaxis.MouseLeftButton:
-			clickedDir, ok := dirlist.Clicked(localX, localY)
-			if ok {
-				dirlist.Select(clickedDir)
+			if event.EventType == vaxis.EventPress {
+				clickedDir, ok := dirlist.Clicked(localX, localY)
+				if ok {
+					dirlist.Select(clickedDir)
+				}
 			}
 		case vaxis.MouseWheelDown:
 			dirlist.Next()

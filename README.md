@@ -1,15 +1,52 @@
-# aerc
+# aerc (patched)
 
+This is a patched version of [aerc](https://sr.ht/~rjarry/aerc/), the terminal email client.
+
+**Upstream**: [git.sr.ht/~rjarry/aerc](https://git.sr.ht/~rjarry/aerc) (v0.21.0)
+
+## Bug Fix: Mouse hover triggers unintended selection
+
+### Problem
+
+When `mouse-enabled=true` in `aerc.conf`, moving the mouse cursor (without
+clicking) over the directory list, message list, or MIME part switcher causes
+items to be selected and acted upon. In the message list split view, this
+means emails are opened just by hovering over them.
+
+### Root Cause
+
+The vaxis terminal library reports mouse motion events with `Button = 0`,
+which is the same value as `MouseLeftButton` (defined as `iota` = 0). The
+aerc mouse handlers check `event.Button` but not `event.EventType`, so motion
+events are incorrectly treated as left-click events.
+
+### Fix
+
+Added `event.EventType == vaxis.EventPress` guards to all `MouseLeftButton`
+handlers, consistent with how vaxis's own `vxfw/button` widget handles mouse
+events. Files changed:
+
+- `app/dirlist.go` -- Directory list (flat mode)
+- `app/dirtree.go` -- Directory tree (tree mode)
+- `app/msglist.go` -- Message list
+- `app/partswitcher.go` -- MIME part switcher
+
+### Building
+
+```bash
+go build -o aerc
+cp aerc ~/.local/bin/aerc
+```
+
+---
+
+## Original README
 [![builds.sr.ht status](https://builds.sr.ht/~rjarry/aerc.svg)](https://builds.sr.ht/~rjarry/aerc)
 [![GitHub macOS CI status](https://github.com/rjarry/aerc/actions/workflows/macos.yml/badge.svg)](https://github.com/rjarry/aerc/actions/workflows/macos.yml)
-
 [aerc](https://sr.ht/~rjarry/aerc/) is an email client for your terminal.
-
 This is a fork of [the original aerc](https://git.sr.ht/~sircmpwn/aerc)
 by Drew DeVault.
-
 A short demonstration can be found on [https://aerc-mail.org/](https://aerc-mail.org/)
-
 Join the IRC channel: [#aerc on irc.libera.chat](http://web.libera.chat/?channels=aerc)
 for end-user support, and development.
 

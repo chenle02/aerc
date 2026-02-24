@@ -178,15 +178,17 @@ func (ps *PartSwitcher) MouseEvent(localX int, localY int, event vaxis.Event) {
 
 	switch e.Button {
 	case vaxis.MouseLeftButton:
-		i := localY - ps.offset + ps.Scroll()
-		if i < 0 || i >= len(ps.parts) {
-			break
+		if e.EventType == vaxis.EventPress {
+			i := localY - ps.offset + ps.Scroll()
+			if i < 0 || i >= len(ps.parts) {
+				break
+			}
+			if ps.parts[i].part.MIMEType == "multipart" {
+				break
+			}
+			ps.selected = i
+			ps.Invalidate()
 		}
-		if ps.parts[i].part.MIMEType == "multipart" {
-			break
-		}
-		ps.selected = i
-		ps.Invalidate()
 	case vaxis.MouseWheelDown:
 		ps.NextPart()
 		ps.Invalidate()

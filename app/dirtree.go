@@ -165,9 +165,11 @@ func (dt *DirectoryTree) MouseEvent(localX int, localY int, event vaxis.Event) {
 	if event, ok := event.(vaxis.Mouse); ok {
 		switch event.Button {
 		case vaxis.MouseLeftButton:
-			clickedDir, ok := dt.Clicked(localX, localY)
-			if ok {
-				dt.Select(clickedDir)
+			if event.EventType == vaxis.EventPress {
+				clickedDir, ok := dt.Clicked(localX, localY)
+				if ok {
+					dt.Select(clickedDir)
+				}
 			}
 		case vaxis.MouseWheelDown:
 			dt.NextPrevDelta(1)
