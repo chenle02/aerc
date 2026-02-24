@@ -57,12 +57,12 @@ type templateData struct {
 	// only available when replying with a quote
 	parent *models.OriginalMail
 	// only available for the message list
-	info   *models.MessageInfo
-	marked bool
-	msgNum int
+	info        *models.MessageInfo
+	marked      bool
+	msgNum      int
 	relativeNum int
-	visual bool
-	hasNew bool
+	visual      bool
+	hasNew      bool
 
 	// message list threading
 	threadInfo ThreadInfo
