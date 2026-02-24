@@ -27,10 +27,10 @@ cfilters_src = $(wildcard filters/*.c)
 cfilters     = $(patsubst filters/%.c,%,$(cfilters_src))
 filters      = $(filter-out filters/vectors filters/test.sh filters/%.c,$(wildcard filters/*))
 
-.PHONY: all
+.PHONY: all aerc $(cfilters)
 all: aerc $(cfilters)
 
-aerc: $(shell find . -type f -name '*.go') go.mod go.sum
+aerc:
 	$(GO) build -trimpath $(GOFLAGS) -ldflags "$(GO_LDFLAGS)" -o $@
 
 $(cfilters): %: filters/%.c
