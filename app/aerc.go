@@ -38,6 +38,7 @@ type Aerc struct {
 	statusline     *StatusLine
 	pasting        bool
 	pendingKeys    []config.KeyStroke
+	countPrefix    int
 	prompts        *ui.Stack
 	tabs           *ui.Tabs
 	beep           func()
@@ -429,6 +430,26 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 		default:
 			stroke.Key = event.Keycode
 		}
+
+		// Vim-style count prefix: accumulate digits before commands
+		// Start with 1-9, continue with 0-9, only with no modifiers
+		// and no other pending key sequence in progress
+		if stroke.Modifiers == 0 && len(aerc.pendingKeys) == 0 {
+			if stroke.Key >= '1' && stroke.Key <= '9' && aerc.countPrefix == 0 {
+				aerc.countPrefix = int(stroke.Key - '0')
+				ui.Invalidate()
+				return true
+			}
+			if stroke.Key >= '0' && stroke.Key <= '9' && aerc.countPrefix > 0 {
+				aerc.countPrefix = aerc.countPrefix*10 + int(stroke.Key-'0')
+				if aerc.countPrefix > 999 {
+					aerc.countPrefix = 999
+				}
+				ui.Invalidate()
+				return true
+			}
+		}
+
 		aerc.pendingKeys = append(aerc.pendingKeys, stroke)
 		ui.Invalidate()
 		bindings := aerc.getBindings()
@@ -437,7 +458,14 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 		switch result {
 		case config.BINDING_FOUND:
 			aerc.clearKeyhint()
-			aerc.simulate(strokes)
+			n := aerc.countPrefix
+			aerc.countPrefix = 0
+			if n < 1 {
+				n = 1
+			}
+			for i := 0; i < n; i++ {
+				aerc.simulate(strokes)
+			}
 			return true
 		case config.BINDING_INCOMPLETE:
 			incomplete = true
@@ -448,7 +476,14 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 			switch result {
 			case config.BINDING_FOUND:
 				aerc.clearKeyhint()
-				aerc.simulate(strokes)
+				n := aerc.countPrefix
+				aerc.countPrefix = 0
+				if n < 1 {
+					n = 1
+				}
+				for i := 0; i < n; i++ {
+					aerc.simulate(strokes)
+				}
 				return true
 			case config.BINDING_INCOMPLETE:
 				incomplete = true
@@ -458,6 +493,7 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 		if !incomplete {
 			aerc.pendingKeys = []config.KeyStroke{}
 			aerc.clearKeyhint()
+			aerc.countPrefix = 0
 			exKey := bindings.ExKey
 			if aerc.simulating > 0 {
 				// Keybindings still use : even if you change the ex key
