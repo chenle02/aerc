@@ -34,9 +34,18 @@ events. Files changed:
 ### Building
 
 ```bash
-go build -o aerc
-cp aerc ~/.local/bin/aerc
+make          # build binary + filters
+make install  # build + install to ~/.local
 ```
+
+| Command | Action |
+|---------|--------|
+| `make` | Build binary + filters |
+| `make install` | Build + install to `~/.local` |
+| `make update` | `git pull` + build + install |
+| `make clean` | Remove build artifacts |
+
+The upstream `GNUmakefile` is preserved as `GNUmakefile.upstream`.
 
 ---
 
