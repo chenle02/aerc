@@ -27,7 +27,7 @@ type Composer interface {
 type DataSetter interface {
 	Data() models.TemplateData
 	SetHeaders(*mail.Header, *models.OriginalMail)
-	SetInfo(*models.MessageInfo, int, bool)
+	SetInfo(*models.MessageInfo, int, int, bool)
 	SetBody(string)
 	SetVisual(bool)
 	SetThreading(ThreadInfo)
@@ -61,11 +61,12 @@ type templateData struct {
 	info *models.MessageInfo
 
 	// only available when composing
-	body   string
-	marked bool
-	msgNum int
-	visual bool
-	hasNew bool
+	body        string
+	marked      bool
+	msgNum      int
+	relativeNum int
+	visual      bool
+	hasNew      bool
 
 	// message list threading
 	threadInfo ThreadInfo
@@ -102,11 +103,20 @@ func (d *templateData) SetHeaders(h *mail.Header, o *models.OriginalMail) {
 }
 
 // only used for message list templates
-func (d *templateData) SetInfo(info *models.MessageInfo, num int, marked bool,
+func (d *templateData) SetInfo(info *models.MessageInfo, num int, selectedRow int, marked bool,
 ) {
 	d.info = info
 	d.msgNum = num
 	d.marked = marked
+	if num >= 0 && selectedRow >= 0 {
+		rel := num - selectedRow
+		if rel < 0 {
+			rel = -rel
+		}
+		d.relativeNum = rel
+	} else {
+		d.relativeNum = 0
+	}
 }
 
 func (d *templateData) SetBody(body string) {
@@ -393,6 +403,10 @@ func (d *templateData) SubjectBase() string {
 
 func (d *templateData) Number() int {
 	return d.msgNum
+}
+
+func (d *templateData) RelativeNumber() int {
+	return d.relativeNum
 }
 
 func (d *templateData) Labels() []string {

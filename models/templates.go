@@ -31,6 +31,7 @@ type TemplateData interface {
 	Body() string
 	SubjectBase() string
 	Number() int
+	RelativeNumber() int
 	Labels() []string
 	Filename() string
 	Filenames() []string

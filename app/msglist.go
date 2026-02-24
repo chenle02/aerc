@@ -90,9 +90,11 @@ func (ml *MessageList) Draw(ctx *ui.Context) {
 	ml.SetOffset(uiConfig.MsglistScrollOffset)
 	ml.UpdateScroller(ml.height, len(store.Uids()))
 	iter := store.UidsIterator()
+	selectedRow := -1
 	for i := 0; iter.Next(); i++ {
 		if store.SelectedUid() == iter.Value().(models.UID) {
 			ml.EnsureScroll(i)
+			selectedRow = i - ml.Scroll()
 			break
 		}
 	}
@@ -169,7 +171,7 @@ func (ml *MessageList) Draw(ctx *ui.Context) {
 		if showThreads {
 			threadView.Update(data, uid)
 		}
-		if addMessage(store, uid, &table, data, uiConfig) {
+		if addMessage(store, uid, &table, data, uiConfig, selectedRow) {
 			break
 		}
 	}
@@ -203,6 +205,7 @@ func addMessage(
 	store *lib.MessageStore, uid models.UID,
 	table *ui.Table, data state.DataSetter,
 	uiConfig *config.UIConfig,
+	selectedRow int,
 ) bool {
 	msg, ok := store.Messages[uid]
 	if !ok {
@@ -261,7 +264,7 @@ func addMessage(
 		params.styles = append(params.styles, config.STYLE_MSGLIST_MARKED)
 	}
 
-	data.SetInfo(msg, len(table.Rows), marked)
+	data.SetInfo(msg, len(table.Rows), selectedRow, marked)
 
 	for c, col := range table.Columns {
 		var buf bytes.Buffer
