@@ -194,7 +194,7 @@ func templateData(
 	data := state.NewDataSetter()
 	data.SetAccount(cfg)
 	data.SetFolder(folder)
-	data.SetInfo(msg, 0, false)
+	data.SetInfo(msg, 0, 0, false)
 	if acct != nil {
 		acct.SetStatus(func(s *state.AccountState, _ string) {
 			data.SetState(s)

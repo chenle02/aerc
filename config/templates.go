@@ -88,6 +88,7 @@ func (d *dummyData) Subject() string                 { return "Re: [PATCH] hey" 
 func (d *dummyData) SubjectBase() string             { return "[PATCH] hey" }
 func (d *dummyData) Attach(string) string            { return "" }
 func (d *dummyData) Number() int                     { return 0 }
+func (d *dummyData) RelativeNumber() int              { return 0 }
 func (d *dummyData) Labels() []string                { return nil }
 func (d *dummyData) Filename() string                { return "" }
 func (d *dummyData) Filenames() []string             { return nil }

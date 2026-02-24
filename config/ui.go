@@ -231,6 +231,9 @@ func (*UIConfig) ParseIndexColumns(section *ini.Section, key *ini.Key) ([]*Colum
 	if !section.HasKey("column-subject") {
 		_, _ = section.NewKey("column-subject", `{{.ThreadPrefix}}{{.Subject}}`)
 	}
+	if !section.HasKey("column-relative") {
+		_, _ = section.NewKey("column-relative", `{{.RelativeNumber}}`)
+	}
 	return ParseColumnDefs(key, section)
 }
 
