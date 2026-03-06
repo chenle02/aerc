@@ -433,8 +433,23 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 
 		// Vim-style count prefix: accumulate digits before commands
 		// Start with 1-9, continue with 0-9, only with no modifiers
-		// and no other pending key sequence in progress
-		if stroke.Modifiers == 0 && len(aerc.pendingKeys) == 0 {
+		// and no other pending key sequence in progress.
+		// Skip when the focused widget is an embedded terminal so
+		// that digit keys pass through to the terminal application.
+		useCountPrefix := true
+		switch view := aerc.SelectedTabContent().(type) {
+		case *Composer:
+			if view.Bindings() == "compose::editor" {
+				useCountPrefix = false
+			}
+		case *Terminal:
+			useCountPrefix = false
+		case *MessageViewer:
+			if view.Bindings() == "view::passthrough" {
+				useCountPrefix = false
+			}
+		}
+		if useCountPrefix && stroke.Modifiers == 0 && len(aerc.pendingKeys) == 0 {
 			if stroke.Key >= '1' && stroke.Key <= '9' && aerc.countPrefix == 0 {
 				aerc.countPrefix = int(stroke.Key - '0')
 				ui.Invalidate()
