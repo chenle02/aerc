@@ -434,12 +434,15 @@ func (aerc *Aerc) Event(event vaxis.Event) bool {
 		// Vim-style count prefix: accumulate digits before commands
 		// Start with 1-9, continue with 0-9, only with no modifiers
 		// and no other pending key sequence in progress.
-		// Skip when the focused widget is an embedded terminal so
-		// that digit keys pass through to the terminal application.
+		// Skip when the focused widget is an input surface so
+		// that digit keys pass through to text fields and terminals.
 		useCountPrefix := true
 		switch view := aerc.SelectedTabContent().(type) {
 		case *Composer:
-			if view.Bindings() == "compose::editor" {
+			// compose::editor is the embedded editor, while compose is
+			// the header editor (To/Cc/Subject/etc.). Only review mode
+			// has no text input focus and can use count prefixes safely.
+			if view.Bindings() != "compose::review" {
 				useCountPrefix = false
 			}
 		case *Terminal:
