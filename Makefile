@@ -10,7 +10,7 @@ SHAREDIR = $(PREFIX)/share/aerc
 LIBEXECDIR = $(PREFIX)/libexec/aerc
 FILTERDIR  = $(LIBEXECDIR)/filters
 
-VERSION ?= $(shell git describe --long --abbrev=12 --tags --dirty 2>/dev/null || echo 0.21.0)
+VERSION ?= $(shell git describe --long --abbrev=12 --tags --dirty 2>/dev/null || echo 0.22.0)
 DATE    ?= $(shell date +%Y-%m-%d)
 GO      ?= go
 CC      ?= cc
@@ -46,8 +46,18 @@ install: all
 	@for f in $(filters); do \
 		cp -af $$f $(FILTERDIR)/; \
 	done
+	@# Install this build's own default config, stylesets and templates into
+	@# SHAREDIR (baked in via config.shareDir). Without them aerc falls back to
+	@# /usr/share/aerc, which pacman upgrades independently -> template fields
+	@# this build doesn't know (e.g. .Body in 0.22) break startup.
+	@mkdir -p $(SHAREDIR)/stylesets $(SHAREDIR)/templates
+	cp -f config/*.conf $(SHAREDIR)/
+	cp -f stylesets/* $(SHAREDIR)/stylesets/
+	cp -f templates/* $(SHAREDIR)/templates/
 	@echo "Installed aerc to $(BINDIR)/aerc"
 	@echo "Installed filters to $(FILTERDIR)/"
+	@echo "Installed config/stylesets/templates to $(SHAREDIR)/"
+	@$(BINDIR)/aerc -v
 
 .PHONY: clean
 clean:
